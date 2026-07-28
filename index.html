@@ -532,21 +532,7 @@ function updatePRCharts(){
   });
 
   // Anomaly chart: recent avg (2011-2025) vs baseline (1981-2010)
-  var anomalies=prSelected.map(function(w){
-    var recentVals=[];
-    for(var yr=2011;yr<=2025;yr++){if(PR_DATA[w]&&PR_DATA[w][String(yr)])recentVals.push(PR_DATA[w][String(yr)]);}
-    var recentAvg=recentVals.length>0?recentVals.reduce(function(a,b){return a+b;})/recentVals.length:0;
-    return Math.round((recentAvg - PR_BASELINE[w])*10)/10;
-  });
-  var anomalyColors=anomalies.map(function(v){return v>=0?'#3498db':'#e74c3c';});
-  if(prAnomalyChart)prAnomalyChart.destroy();
-  prAnomalyChart=new Chart(document.getElementById('pr-anomaly-chart').getContext('2d'),{
-    type:'bar',
-    data:{labels:prSelected.map(function(w){return 'W'+w;}),datasets:[{data:anomalies,backgroundColor:anomalyColors,borderRadius:3}]},
-    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.parsed.y+' mm vs baseline';}}}},scales:Object.assign({},sc,{y:{ticks:{color:'#d4cfc7',font:{family:'DM Mono',size:10}},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:'mm vs baseline',color:'#6b7280',font:{size:10}}}})}
-  });
-
-  // Summary table
+// Summary table
   var tbody=document.querySelector('#pr-summary-table tbody'); tbody.innerHTML='';
   for(var i=0;i<prSelected.length;i++){
     var w=prSelected[i];
