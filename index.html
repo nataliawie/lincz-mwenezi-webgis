@@ -82,6 +82,35 @@
     .summary-swatch{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle}
     .dash-note{font-size:10px;color:var(--muted);margin-top:16px;line-height:1.6;border-left:2px solid var(--border);padding-left:12px}
     #credit{position:fixed;bottom:10px;right:16px;z-index:90;font-size:12px;font-weight:500;color:rgba(255,255,255,0.65);letter-spacing:.03em;pointer-events:none;font-family:'DM Mono',monospace}
+
+    #about-view{position:fixed;top:56px;left:0;right:0;bottom:0;overflow-y:auto;background:var(--bg);padding:28px 32px 60px}
+    #about-view.hidden{display:none}
+    .about-wrap{max-width:840px}
+    .about-title{font-family:'Fraunces',serif;font-size:22px;color:var(--accent);margin-bottom:6px}
+    .about-subtitle{font-size:11px;color:var(--muted);letter-spacing:.03em;margin-bottom:26px;line-height:1.7}
+    .about-block{margin-bottom:30px}
+    .about-block-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:7px}
+    .about-text{font-size:12px;line-height:1.75;color:var(--text);margin-bottom:10px}
+    .about-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:6px}
+    .about-table th{text-align:left;color:var(--muted);font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--border)}
+    .about-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:top;line-height:1.5}
+    .accuracy-tables{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:10px}
+    .accuracy-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+    .accuracy-card-title{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+    .accuracy-meta{font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6}
+    .about-link{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(200,169,110,.4)}
+    .about-link:hover{border-bottom-color:var(--accent)}
+    .limit-list{font-size:12px;line-height:1.75;padding-left:18px;color:var(--text)}
+    .limit-list li{margin-bottom:9px}
+    #waypoint-filter{padding:12px 16px 14px;border-bottom:1px solid var(--border);display:none}
+    #waypoint-filter.show{display:block}
+    .wf-title{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+    .wf-chips{display:flex;flex-wrap:wrap;gap:5px}
+    .wf-chip{font-size:10px;padding:4px 9px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;transition:all .15s}
+    .wf-chip:hover{border-color:var(--accent)}
+    .wf-chip.selected{background:var(--accent);color:#0e1117;border-color:var(--accent);font-weight:600}
+    .enso-legend{display:flex;gap:18px;align-items:center;font-size:10px;color:var(--muted);margin-top:12px;flex-wrap:wrap}
+    .enso-swatch{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
   </style>
 </head>
 <body>
@@ -90,6 +119,7 @@
   <div id="tabs">
     <button class="tab-btn active" data-tab="map">Map</button>
     <button class="tab-btn" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="about">About</button>
   </div>
   <div class="sep"></div>
   <div class="sub">Mwenezi District &middot; Zimbabwe</div>
@@ -104,6 +134,10 @@
         <div class="layer-name">Satellite Imagery</div>
       </div>
       <div id="layer-list"></div>
+    </div>
+    <div id="waypoint-filter">
+      <div class="wf-title">Waypoint Type</div>
+      <div class="wf-chips" id="wf-chips"></div>
     </div>
     <div id="legend-box">
       <div class="legend-title">Legend</div>
@@ -190,6 +224,11 @@
     <div class="chart-card-full">
       <div class="chart-card-title">Annual Rainfall (mm)</div>
       <canvas id="pr-line-chart" style="max-height:360px"></canvas>
+      <div class="enso-legend">
+        <span><span class="enso-swatch" style="background:rgba(192,57,43,0.6)"></span>El Ni&ntilde;o (typically drier)</span>
+        <span><span class="enso-swatch" style="background:rgba(61,122,181,0.6)"></span>La Ni&ntilde;a (typically wetter)</span>
+        <span>Moderate-to-very-strong events, NOAA Oceanic Ni&ntilde;o Index (ONI)</span>
+      </div>
     </div>
     <div class="charts-grid" style="margin-top:20px">
       <div class="chart-card">
@@ -204,8 +243,99 @@
         <thead><tr><th>Ward</th><th>Avg Rainfall (mm)</th><th>Baseline (mm)</th><th>Driest Year</th><th>Wettest Year</th></tr></thead>
         <tbody></tbody>
       </table>
-      <div class="dash-note">Monthly precipitation data from satellite-derived records (1981&ndash;2025), aggregated to annual totals per ward.</div>
+      <div class="dash-note">Monthly precipitation data from satellite-derived records (1981&ndash;2025), aggregated to annual totals per ward. Baseline: historical average rainfall (mm).</div>
     </div>
+    <div class="chart-card-full" style="margin-top:20px">
+      <div class="chart-card-title">Water Availability &mdash; District Level (Precipitation &minus; Evapotranspiration)</div>
+      <canvas id="wb-bar-chart" style="max-height:280px"></canvas>
+      <div class="dash-note">Simplified water availability for Mwenezi District as a whole (not disaggregated by ward), 2000&ndash;2024, calculated as monthly precipitation (CHIRPS) minus evapotranspiration, summed to annual totals. Negative values (red) indicate a water deficit year; positive values (blue) indicate a surplus.</div>
+    </div>
+  </div>
+</div>
+<div id="about-view" class="hidden">
+  <div class="about-wrap">
+    <div class="about-title">About This Platform</div>
+    <div class="about-subtitle">Web-based GIS platform for climate adaptation planning in Mwenezi District, Zimbabwe &mdash; developed for the LINCZ Project (Locally-led Indigenous Nature-based Solutions for Climate Adaptation).</div>
+
+    <div class="about-block">
+      <div class="about-block-title">Project Objective</div>
+      <div class="about-text">This platform supports climate adaptation planning in Mwenezi District by integrating land use / land cover change, forest loss, precipitation trends, and simplified water availability into a single spatial decision-support tool. It was designed to help identify priority areas for intervention &mdash; including forest and rangeland degradation, water stress, and land cover change &mdash; and to communicate spatial evidence clearly to project partners and communities.</div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Datasets &amp; Sources</div>
+      <table class="about-table">
+        <thead><tr><th>Layer</th><th>Source</th><th>Resolution / Period</th></tr></thead>
+        <tbody>
+          <tr><td>Ward Boundaries</td><td>Administrative boundary dataset (GADM)</td><td>Vector</td></tr>
+          <tr><td>Agroecological Zones</td><td>FAO Global Agro-Ecological Zones</td><td>Vector</td></tr>
+          <tr><td>Soil Types</td><td>Regional soil survey compilation</td><td>Vector</td></tr>
+          <tr><td>Protected Areas</td><td>World Database on Protected Areas (WDPA), UNEP-WCMC</td><td>Vector</td></tr>
+          <tr><td>Land Use / Land Cover</td><td>Esri 10m Annual Land Use Land Cover (Sentinel-2 derived)</td><td>10 m &middot; annual</td></tr>
+          <tr><td>Forest Loss</td><td>Global Forest Watch / Hansen et al., University of Maryland</td><td>30 m &middot; 2001&ndash;2024</td></tr>
+          <tr><td>Precipitation</td><td>CHIRPS &mdash; Climate Hazards Center InfraRed Precipitation with Station data</td><td>~5.5 km (0.05&deg;) &middot; monthly, 1981&ndash;2025</td></tr>
+          <tr><td>Digital Elevation Model &amp; Drainage Network</td><td>ALOS PALSAR-2 DEM</td><td>12 m</td></tr>
+          <tr><td>Water Availability (P &minus; ET)</td><td>CHIRPS precipitation and satellite-derived evapotranspiration estimates</td><td>District level &middot; monthly, 2000&ndash;2024</td></tr>
+          <tr><td>Field Waypoints</td><td>GPS field survey (2024), temporally cross-checked with high-resolution historical satellite imagery</td><td>Point data</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Land Cover Accuracy Assessment</div>
+      <div class="about-text">Reference points were collected via GPS field survey in 2024, then temporally cross-checked using high-resolution historical satellite imagery to align with the classification year being validated. This local, ground-based validation confirms that the Esri Land Cover product performs consistently well in Mwenezi District specifically.</div>
+      <div class="accuracy-tables">
+        <div class="accuracy-card">
+          <div class="accuracy-card-title">2025 &middot; Balanced Accuracy by Class</div>
+          <table class="about-table">
+            <tbody>
+              <tr><td>Built Area</td><td>0.97</td></tr>
+              <tr><td>Crops</td><td>0.86</td></tr>
+              <tr><td>Water</td><td>0.95</td></tr>
+              <tr><td>Flooded Vegetation</td><td>0.95</td></tr>
+              <tr><td>Rangeland</td><td>0.87</td></tr>
+              <tr><td>Trees</td><td>0.92</td></tr>
+            </tbody>
+          </table>
+          <div class="accuracy-meta">Overall Accuracy: 0.85 &middot; Kappa: 0.80 &middot; n = 210 reference points</div>
+        </div>
+        <div class="accuracy-card">
+          <div class="accuracy-card-title">2020 &middot; Balanced Accuracy by Class</div>
+          <table class="about-table">
+            <tbody>
+              <tr><td>Built Area</td><td>1.00</td></tr>
+              <tr><td>Crops</td><td>0.82</td></tr>
+              <tr><td>Water</td><td>0.95</td></tr>
+              <tr><td>Flooded Vegetation</td><td>0.95</td></tr>
+              <tr><td>Rangeland</td><td>0.93</td></tr>
+              <tr><td>Trees</td><td>0.97</td></tr>
+            </tbody>
+          </table>
+          <div class="accuracy-meta">Overall Accuracy: 0.87 &middot; Kappa: 0.83 &middot; n = 208 reference points</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Data Processing</div>
+      <div class="about-text">Vector layers were reprojected to a common coordinate reference system, clipped to the district and ward boundaries, and checked for topology errors (self-intersections, gaps, and overlaps) in QGIS before being compiled into a single PMTiles archive for web delivery. Forest loss and precipitation rasters were intersected with ward boundaries and summarized through zonal statistics to produce the per-ward time series shown in the Dashboard tab.</div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Limitations &amp; Data Gaps</div>
+      <ul class="limit-list">
+        <li>Precipitation (CHIRPS) is a satellite rainfall estimate at ~5.5 km resolution. There are no rain gauge stations within Mwenezi District available for local validation, though regional studies over Eastern and Southern Africa show good agreement between CHIRPS and station data.</li>
+        <li>The drainage network is derived from the ALOS PALSAR-2 Digital Elevation Model (12 m resolution) through hydrological flow modelling, covering Strahler stream orders 5&ndash;8. The distinction between perennial and intermittent channels has not been field-validated &mdash; a recognized limitation, particularly relevant in this semi-arid setting where intermittent channels are important for rainfed agriculture.</li>
+        <li>Water availability (precipitation minus evapotranspiration) is available at the district level only, not disaggregated by ward, and covers 2000&ndash;2024 &mdash; a shorter period than the ward-level precipitation series (1981&ndash;2025). Evapotranspiration is a modelled/estimated product, not field-measured.</li>
+        <li>Land cover is derived from a single annual satellite composite; short-lived or sub-pixel land cover changes may not be captured.</li>
+      </ul>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Open Data Repository</div>
+      <div class="about-text">The full geospatial dataset underlying this platform &mdash; including the Digital Elevation Model, Land Use / Land Cover (2017&ndash;2024), soils, geology, agroecological zones, protected areas, and hydrology &mdash; is openly published and citable via Zenodo: <a class="about-link" href="https://zenodo.org/records/18112051" target="_blank" rel="noopener">DOI 10.5281/zenodo.18112051</a> (CC BY 4.0, Canadian Mennonite University).</div>
+    </div>
+
   </div>
 </div>
 <div id="credit">Platform &amp; dashboard developed by Natalia Wiederkehr, PhD &mdash; LINCZ Project</div>
@@ -264,7 +394,140 @@ function initLayers() {
     satOn=!satOn; map.setLayoutProperty('satellite-base','visibility',satOn?'visible':'none');
     this.classList.toggle('off',!satOn);
   });
+  tryBuildWaypointFilter();
+  tryFixAgroColors();
 }
+/* ── WAYPOINT TYPE FILTER ── */
+var WF_FIELD=null, WF_VALUES=[], wfSelected=[];
+function tryBuildWaypointFilter(){
+  if(WF_FIELD)return;
+  var feats;
+  try{ feats = map.querySourceFeatures('mwenezi',{sourceLayer:'project_waypoints'}); }catch(e){ feats=[]; }
+  if(!feats || feats.length<3) return;
+  var candidates=['Class','class','Type','type','Category','category','Intervention','intervention'];
+  var field=null;
+  for(var i=0;i<candidates.length;i++){
+    if(feats[0].properties && candidates[i] in feats[0].properties){ field=candidates[i]; break; }
+  }
+  if(!field){
+    var propKeys=Object.keys(feats[0].properties||{});
+    for(var k=0;k<propKeys.length;k++){
+      var key=propKeys[k];
+      if(key==='Proj.name'||key==='fid'||key==='id'||key==='FID')continue;
+      var vals={}, isNumeric=false;
+      for(var f=0;f<feats.length;f++){
+        var v=feats[f].properties[key];
+        if(v===undefined||v===null)continue;
+        if(typeof v==='number'){isNumeric=true;break;}
+        vals[v]=true;
+      }
+      if(isNumeric)continue;
+      var distinct=Object.keys(vals);
+      if(distinct.length>=2 && distinct.length<=12){ field=key; break; }
+    }
+  }
+  if(!field)return;
+  var uniq={};
+  for(var f2=0;f2<feats.length;f2++){
+    var v2=feats[f2].properties[field];
+    if(v2!==undefined && v2!==null && v2!=='') uniq[v2]=true;
+  }
+  WF_VALUES=Object.keys(uniq).sort();
+  if(WF_VALUES.length<2)return;
+  WF_FIELD=field;
+  wfSelected=WF_VALUES.slice();
+  buildWaypointFilterUI();
+}
+function buildWaypointFilterUI(){
+  var box=document.getElementById('wf-chips'); box.innerHTML='';
+  for(var i=0;i<WF_VALUES.length;i++){
+    var v=WF_VALUES[i];
+    var chip=document.createElement('button'); chip.className='wf-chip selected';
+    chip.textContent=v;
+    (function(val,el){
+      el.addEventListener('click',function(){
+        var idx=wfSelected.indexOf(val);
+        if(idx>-1){wfSelected.splice(idx,1);el.classList.remove('selected');}
+        else{wfSelected.push(val);el.classList.add('selected');}
+        applyWaypointFilter();
+      });
+    })(v,chip);
+    box.appendChild(chip);
+  }
+  document.getElementById('waypoint-filter').classList.add('show');
+}
+function applyWaypointFilter(){
+  var expr = wfSelected.length===WF_VALUES.length ? null : ['in',['get',WF_FIELD],['literal',wfSelected]];
+  try{ map.setFilter('waypoints-circle', expr); }catch(e){}
+  try{ map.setFilter('waypoint-labels', expr); }catch(e){}
+}
+/* ── AGROECOLOGICAL ZONES: ROBUST COLOR MATCHING ── */
+/* The original fill-color expression only matched the exact strings
+   "Region Va" / "Region Vb". If the source attribute has a different
+   name or the values differ slightly, every feature falls through to
+   the grey default. This detects the real field/values at runtime and
+   rebuilds the paint expression + legend to match. */
+var _agroFixed=false;
+function tryFixAgroColors(){
+  if(_agroFixed)return;
+  var feats;
+  try{ feats = map.querySourceFeatures('mwenezi',{sourceLayer:'agro_zones'}); }catch(e){ feats=[]; }
+  if(!feats || feats.length<2) return;
+  var candidates=['gez_name','GEZ_NAME','Gez_Name','Gez_name','zone','Zone','ZONE','Region','region','REGION','Class','class','CLASS','Type','type','TYPE','name','NAME','Name'];
+  var field=null;
+  for(var i=0;i<candidates.length;i++){
+    if(feats[0].properties && candidates[i] in feats[0].properties){ field=candidates[i]; break; }
+  }
+  if(!field){
+    var propKeys=Object.keys(feats[0].properties||{});
+    for(var k=0;k<propKeys.length;k++){
+      var key=propKeys[k];
+      if(key==='fid'||key==='id'||key==='FID')continue;
+      var vals={}, isNumeric=false;
+      for(var f=0;f<feats.length;f++){
+        var v=feats[f].properties[key];
+        if(v===undefined||v===null)continue;
+        if(typeof v==='number'){isNumeric=true;break;}
+        vals[v]=true;
+      }
+      if(isNumeric)continue;
+      var distinct=Object.keys(vals);
+      if(distinct.length>=2 && distinct.length<=6){ field=key; break; }
+    }
+  }
+  if(!field)return;
+  var uniq={};
+  for(var f2=0;f2<feats.length;f2++){
+    var v2=feats[f2].properties[field];
+    if(v2!==undefined && v2!==null && v2!=='') uniq[v2]=true;
+  }
+  var values=Object.keys(uniq).sort();
+  if(values.length<2)return;
+  var palette=['#e0601a','#1a6bb5','#2db560','#c8a96e','#9b59b6','#e0c020'];
+  var matchExpr=['match',['get',field]];
+  var newColors={};
+  for(var i2=0;i2<values.length;i2++){
+    var c=palette[i2%palette.length];
+    matchExpr.push(values[i2], c);
+    newColors[values[i2]]=c;
+  }
+  matchExpr.push('#888888');
+  try{ map.setPaintProperty('agro-fill','fill-color',matchExpr); }catch(e){}
+  _agroFixed=true;
+  var groups=document.querySelectorAll('#legend-content .legend-group');
+  for(var g=0;g<groups.length;g++){
+    var nameEl=groups[g].querySelector('.legend-group-name');
+    if(nameEl && nameEl.textContent==='Agroecological Zones'){
+      var html='<div class="legend-group-name">Agroecological Zones</div>';
+      for(var vi=0;vi<values.length;vi++)html+='<div class="legend-row"><div class="legend-swatch" style="background:'+newColors[values[vi]]+'"></div><span>'+values[vi]+'</span></div>';
+      groups[g].innerHTML=html;
+      break;
+    }
+  }
+}
+map.on('sourcedata', function(e){
+  if(e.sourceId==='mwenezi' && e.isSourceLoaded){ tryBuildWaypointFilter(); tryFixAgroColors(); }
+});
 var _mapReady=false;
 function _tryInit(){if(_mapReady)return;_mapReady=true;initLayers();}
 map.on('load',_tryInit);
@@ -331,11 +594,17 @@ for(var t=0;t<tabBtns.length;t++){
     if(tab==='map'){
       document.getElementById('map-view').classList.remove('hidden');
       document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('about-view').classList.add('hidden');
       setTimeout(function(){map.resize();},50);
-    } else {
+    } else if(tab==='dashboard'){
       document.getElementById('map-view').classList.add('hidden');
       document.getElementById('dashboard-view').classList.remove('hidden');
+      document.getElementById('about-view').classList.add('hidden');
       renderDashboard();
+    } else {
+      document.getElementById('map-view').classList.add('hidden');
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('about-view').classList.remove('hidden');
     }
   });
 }
@@ -408,7 +677,7 @@ var FL_RAW = {"data": {"1": {"2007": 2.59, "2010": 1.3, "2009": 4.53, "2014": 0.
 var FL_DATA=FL_RAW.data, FL_YEARS=FL_RAW.years, FL_WARDS=FL_RAW.wards;
 var flSelected=FL_WARDS.slice();
 var flLineChart=null, flBarChart=null;
-var WARD_PALETTE=['#e05c1a','#1a6bb5','#2db560','#c8a96e','#c0392b','#9b59b6','#1abc9c','#f39c12','#e74c3c','#3498db','#27ae60','#d35400','#8e44ad','#16a085','#f1c40f','#2980b9','#7f8c8d','#e67e22'];
+var WARD_PALETTE=['#d62929','#22b44d','#8e29d6','#b4a222','#29b9d6','#b42271','#54d629','#2822b4','#d66329','#22b47d','#c829d6','#95b422','#297fd6','#b42240','#29d638','#5922b4','#d69d29','#22b4ae'];
 function buildFLChips(){
   var box=document.getElementById('fl-ward-chips'); box.innerHTML='';
   for(var i=0;i<FL_WARDS.length;i++){
@@ -473,6 +742,49 @@ var PR_DATA=PR_RAW.data, PR_YEARS=PR_RAW.years, PR_WARDS=PR_RAW.wards, PR_BASELI
 var prSelected=PR_WARDS.slice();
 var prLineChart=null, prBarChart=null;
 
+/* ── EL NINO / LA NINA CONTEXT ── */
+/* Moderate-to-very-strong ENSO events (NOAA Oceanic Nino Index), labelled by the peak (second) year of each rainy season */
+var EL_NINO_YEARS=[1983,1987,1992,1995,1998,2003,2005,2007,2010,2016,2019,2024];
+var LA_NINA_YEARS=[1985,1989,1996,1999,2000,2001,2006,2008,2011,2012,2017,2018,2021,2022,2023];
+var ensoBandsPlugin={
+  id:'ensoBands',
+  beforeDraw:function(chart){
+    if(chart.canvas.id!=='pr-line-chart')return;
+    var xScale=chart.scales.x, yScale=chart.scales.y;
+    if(!xScale||!yScale||!PR_YEARS||PR_YEARS.length<2)return;
+    var ctx=chart.ctx;
+    var stepPx=xScale.getPixelForValue(1)-xScale.getPixelForValue(0);
+    ctx.save();
+    for(var i=0;i<PR_YEARS.length;i++){
+      var yr=parseInt(PR_YEARS[i]);
+      var isEN=EL_NINO_YEARS.indexOf(yr)>-1, isLN=LA_NINA_YEARS.indexOf(yr)>-1;
+      if(!isEN&&!isLN)continue;
+      var xC=xScale.getPixelForValue(i);
+      var x0=xC-stepPx/2, x1=xC+stepPx/2;
+      ctx.fillStyle=isEN?'rgba(192,57,43,0.14)':'rgba(61,122,181,0.14)';
+      ctx.fillRect(x0,yScale.top,x1-x0,yScale.bottom-yScale.top);
+    }
+    ctx.restore();
+  }
+};
+if(typeof Chart!=='undefined'&&Chart.register)Chart.register(ensoBandsPlugin);
+
+/* ── WATER AVAILABILITY (P minus ET), DISTRICT LEVEL ── */
+var WB_RAW = {"years":["2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020","2021","2022","2023","2024"],"precip":[771.8,473.1,192.1,432.6,495.9,261.2,449.9,487.7,259.7,428.5,439.3,492.5,219.2,486.0,510.3,248.2,481.6,679.2,465.0,361.4,529.1,551.3,329.0,410.8,336.3],"et":[852.4,666.8,309.1,587.2,639.6,355.1,574.9,512.0,478.2,678.7,570.7,534.1,417.8,563.6,735.5,400.5,475.2,817.7,625.4,485.8,543.8,796.5,598.3,590.9,447.2],"balance":[-80.5,-193.6,-116.9,-154.6,-143.6,-93.9,-125.0,-24.3,-218.5,-250.2,-131.5,-41.6,-198.6,-77.6,-225.2,-152.3,6.5,-138.4,-160.5,-124.5,-14.8,-245.2,-269.4,-180.2,-110.9]};
+var wbChart=null;
+function renderWBChart(){
+  var canvas=document.getElementById('wb-bar-chart');
+  if(!canvas)return;
+  var sc={x:{ticks:{color:'#d4cfc7',font:{family:'DM Mono',size:10}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#d4cfc7',font:{family:'DM Mono',size:10}},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:'mm',color:'#6b7280',font:{size:10}}}};
+  var colors=WB_RAW.balance.map(function(v){return v<0?'#c0392b':'#3d7ab5';});
+  if(wbChart)wbChart.destroy();
+  wbChart=new Chart(canvas.getContext('2d'),{
+    type:'bar',
+    data:{labels:WB_RAW.years,datasets:[{label:'P \u2212 ET (mm)',data:WB_RAW.balance,backgroundColor:colors,borderRadius:3}]},
+    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return (ctx.parsed.y>=0?'Surplus: +':'Deficit: ')+ctx.parsed.y+' mm';}}}},scales:sc}
+  });
+}
+
 function buildPRChips(){
   var box=document.getElementById('pr-ward-chips'); box.innerHTML='';
   for(var i=0;i<PR_WARDS.length;i++){
@@ -497,6 +809,7 @@ function buildPRChips(){
     document.querySelectorAll('#pr-ward-chips .ward-chip').forEach(function(c){c.classList.remove('selected');});
     updatePRCharts();
   });
+  renderWBChart();
 }
 
 function updatePRCharts(){
