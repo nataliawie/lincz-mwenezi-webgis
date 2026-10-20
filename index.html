@@ -245,11 +245,6 @@
       </table>
       <div class="dash-note">Monthly precipitation data from satellite-derived records (1981&ndash;2025), aggregated to annual totals per ward. Baseline: historical average rainfall (mm).</div>
     </div>
-    <div class="chart-card-full" style="margin-top:20px">
-      <div class="chart-card-title">Water Availability &mdash; District Level (Precipitation &minus; Evapotranspiration)</div>
-      <canvas id="wb-bar-chart" style="max-height:280px"></canvas>
-      <div class="dash-note">Simplified water availability for Mwenezi District as a whole (not disaggregated by ward), 2000&ndash;2024, calculated as monthly precipitation (CHIRPS) minus evapotranspiration, summed to annual totals. Negative values (red) indicate a water deficit year; positive values (blue) indicate a surplus.</div>
-    </div>
   </div>
 </div>
 <div id="about-view" class="hidden">
@@ -259,7 +254,7 @@
 
     <div class="about-block">
       <div class="about-block-title">Project Objective</div>
-      <div class="about-text">This platform supports climate adaptation planning in Mwenezi District by integrating land use / land cover change, forest loss, precipitation trends, and simplified water availability into a single spatial decision-support tool. It was designed to help identify priority areas for intervention &mdash; including forest and rangeland degradation, water stress, and land cover change &mdash; and to communicate spatial evidence clearly to project partners and communities.</div>
+      <div class="about-text">This platform supports climate adaptation planning in Mwenezi District by integrating land use / land cover change, forest loss, and precipitation trends into a single spatial decision-support tool. It was designed to help identify priority areas for intervention &mdash; including forest and rangeland degradation, water stress, and land cover change &mdash; and to communicate spatial evidence clearly to project partners and communities.</div>
     </div>
 
     <div class="about-block">
@@ -269,21 +264,20 @@
         <tbody>
           <tr><td>Ward Boundaries</td><td>Administrative boundary dataset (GADM)</td><td>Vector</td></tr>
           <tr><td>Agroecological Zones</td><td>FAO Global Agro-Ecological Zones</td><td>Vector</td></tr>
-          <tr><td>Soil Types</td><td>Regional soil survey compilation</td><td>Vector</td></tr>
+          <tr><td>Soil Types</td><td>FAO Global soil survey compilation</td><td>Vector</td></tr>
           <tr><td>Protected Areas</td><td>World Database on Protected Areas (WDPA), UNEP-WCMC</td><td>Vector</td></tr>
           <tr><td>Land Use / Land Cover</td><td>Esri 10m Annual Land Use Land Cover (Sentinel-2 derived)</td><td>10 m &middot; annual</td></tr>
           <tr><td>Forest Loss</td><td>Global Forest Watch / Hansen et al., University of Maryland</td><td>30 m &middot; 2001&ndash;2024</td></tr>
           <tr><td>Precipitation</td><td>CHIRPS &mdash; Climate Hazards Center InfraRed Precipitation with Station data</td><td>~5.5 km (0.05&deg;) &middot; monthly, 1981&ndash;2025</td></tr>
           <tr><td>Digital Elevation Model &amp; Drainage Network</td><td>ALOS PALSAR-2 DEM</td><td>12 m</td></tr>
-          <tr><td>Water Availability (P &minus; ET)</td><td>CHIRPS precipitation and satellite-derived evapotranspiration estimates</td><td>District level &middot; monthly, 2000&ndash;2024</td></tr>
-          <tr><td>Field Waypoints</td><td>GPS field survey (2024), temporally cross-checked with high-resolution historical satellite imagery</td><td>Point data</td></tr>
+          <tr><td>Field Waypoints</td><td>GPS field survey, temporally cross-checked with high-resolution historical satellite imagery</td><td>Point data</td></tr>
         </tbody>
       </table>
     </div>
 
     <div class="about-block">
       <div class="about-block-title">Land Cover Accuracy Assessment</div>
-      <div class="about-text">Reference points were collected via GPS field survey in 2024, then temporally cross-checked using high-resolution historical satellite imagery to align with the classification year being validated. This local, ground-based validation confirms that the Esri Land Cover product performs consistently well in Mwenezi District specifically.</div>
+      <div class="about-text">Reference points were collected via GPS field survey, then temporally cross-checked using high-resolution historical satellite imagery to align with the classification year being validated. This local, ground-based validation confirms that the Esri Land Cover product performs consistently well in Mwenezi District specifically.</div>
       <div class="accuracy-tables">
         <div class="accuracy-card">
           <div class="accuracy-card-title">2025 &middot; Balanced Accuracy by Class</div>
@@ -326,7 +320,6 @@
       <ul class="limit-list">
         <li>Precipitation (CHIRPS) is a satellite rainfall estimate at ~5.5 km resolution. There are no rain gauge stations within Mwenezi District available for local validation, though regional studies over Eastern and Southern Africa show good agreement between CHIRPS and station data.</li>
         <li>The drainage network is derived from the ALOS PALSAR-2 Digital Elevation Model (12 m resolution) through hydrological flow modelling, covering Strahler stream orders 5&ndash;8. The distinction between perennial and intermittent channels has not been field-validated &mdash; a recognized limitation, particularly relevant in this semi-arid setting where intermittent channels are important for rainfed agriculture.</li>
-        <li>Water availability (precipitation minus evapotranspiration) is available at the district level only, not disaggregated by ward, and covers 2000&ndash;2024 &mdash; a shorter period than the ward-level precipitation series (1981&ndash;2025). Evapotranspiration is a modelled/estimated product, not field-measured.</li>
         <li>Land cover is derived from a single annual satellite composite; short-lived or sub-pixel land cover changes may not be captured.</li>
       </ul>
     </div>
@@ -769,21 +762,6 @@ var ensoBandsPlugin={
 };
 if(typeof Chart!=='undefined'&&Chart.register)Chart.register(ensoBandsPlugin);
 
-/* ── WATER AVAILABILITY (P minus ET), DISTRICT LEVEL ── */
-var WB_RAW = {"years":["2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011","2012","2013","2014","2015","2016","2017","2018","2019","2020","2021","2022","2023","2024"],"precip":[771.8,473.1,192.1,432.6,495.9,261.2,449.9,487.7,259.7,428.5,439.3,492.5,219.2,486.0,510.3,248.2,481.6,679.2,465.0,361.4,529.1,551.3,329.0,410.8,336.3],"et":[852.4,666.8,309.1,587.2,639.6,355.1,574.9,512.0,478.2,678.7,570.7,534.1,417.8,563.6,735.5,400.5,475.2,817.7,625.4,485.8,543.8,796.5,598.3,590.9,447.2],"balance":[-80.5,-193.6,-116.9,-154.6,-143.6,-93.9,-125.0,-24.3,-218.5,-250.2,-131.5,-41.6,-198.6,-77.6,-225.2,-152.3,6.5,-138.4,-160.5,-124.5,-14.8,-245.2,-269.4,-180.2,-110.9]};
-var wbChart=null;
-function renderWBChart(){
-  var canvas=document.getElementById('wb-bar-chart');
-  if(!canvas)return;
-  var sc={x:{ticks:{color:'#d4cfc7',font:{family:'DM Mono',size:10}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#d4cfc7',font:{family:'DM Mono',size:10}},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:'mm',color:'#6b7280',font:{size:10}}}};
-  var colors=WB_RAW.balance.map(function(v){return v<0?'#c0392b':'#3d7ab5';});
-  if(wbChart)wbChart.destroy();
-  wbChart=new Chart(canvas.getContext('2d'),{
-    type:'bar',
-    data:{labels:WB_RAW.years,datasets:[{label:'P \u2212 ET (mm)',data:WB_RAW.balance,backgroundColor:colors,borderRadius:3}]},
-    options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return (ctx.parsed.y>=0?'Surplus: +':'Deficit: ')+ctx.parsed.y+' mm';}}}},scales:sc}
-  });
-}
 
 function buildPRChips(){
   var box=document.getElementById('pr-ward-chips'); box.innerHTML='';
@@ -809,7 +787,6 @@ function buildPRChips(){
     document.querySelectorAll('#pr-ward-chips .ward-chip').forEach(function(c){c.classList.remove('selected');});
     updatePRCharts();
   });
-  renderWBChart();
 }
 
 function updatePRCharts(){
