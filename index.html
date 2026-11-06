@@ -310,12 +310,6 @@
     </div>
 
     <div class="about-block">
-      <div class="about-block-title">Land Use / Land Cover Classes</div>
-      <div class="about-text">The land use / land cover layer uses the seven classes of the Esri 10m Annual Land Use Land Cover product. Their definitions are reproduced below. They are also available on the map (Legend &rarr; Class descriptions, or by clicking a polygon) and in the Land Use / Land Cover dashboard.</div>
-      <div id="lulc-about-desc"></div>
-    </div>
-
-    <div class="about-block">
       <div class="about-block-title">Land Cover Accuracy Assessment</div>
       <div class="about-text">Reference points were collected via GPS field survey, then temporally cross-checked using high-resolution historical satellite imagery to align with the classification year being validated. This local, ground-based validation confirms that the Esri Land Cover product performs consistently well in Mwenezi District specifically.</div>
       <div class="accuracy-tables">
@@ -423,7 +417,7 @@ function lulcDescHTML(){
   }
   return html+'</ul><div class="lc-desc-src">'+LULC_SRC+'</div>';
 }
-['lulc-dash-desc','lulc-about-desc'].forEach(function(id){var el=document.getElementById(id); if(el)el.innerHTML=lulcDescHTML();});
+['lulc-dash-desc'].forEach(function(id){var el=document.getElementById(id); if(el)el.innerHTML=lulcDescHTML();});
 var AGRO_COLORS = { 'Region Va': '#e05c1a', 'Region Vb': '#1a6bb5' };
 var FOREST_LOSS_COLORS = { 'no loss': '#1a3a1a', 'loss detected in 2001': '#ffffb2', 'loss detected in 2002': '#feefa0', 'loss detected in 2003': '#fed98e', 'loss detected in 2004': '#fec76d', 'loss detected in 2005': '#feb24c', 'loss detected in 2006': '#fd9a3a', 'loss detected in 2007': '#fc8127', 'loss detected in 2008': '#f86618', 'loss detected in 2009': '#f0460f', 'loss detected in 2010': '#e52b0a', 'loss detected in 2011': '#d41408', 'loss detected in 2012': '#c00007', 'loss detected in 2013': '#ab0006', 'loss detected in 2014': '#960005', 'loss detected in 2015': '#820004', 'loss detected in 2016': '#6e0003', 'loss detected in 2017': '#5a0003', 'loss detected in 2018': '#470002', 'loss detected in 2019': '#380002', 'loss detected in 2020': '#2a0001', 'loss detected in 2021': '#200001', 'loss detected in 2022': '#160001', 'loss detected in 2023': '#0e0001', 'loss detected in 2024': '#060000' };
 var BOUNDS = { 'waypoints-circle': [30.303976,-21.411430,30.710615,-20.819355] };
