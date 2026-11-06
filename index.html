@@ -41,6 +41,18 @@
     .legend-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
     .legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0;border:1px solid rgba(255,255,255,0.1)}
     .legend-row span{font-size:10px;color:var(--text)}
+    .lc-toggle{margin-top:6px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:3px;padding:4px 8px;cursor:pointer;transition:all .15s}
+    .lc-toggle:hover{color:var(--accent);border-color:var(--accent)}
+    .lc-desc{margin:0;padding:0;list-style:none}
+    .lc-desc-item{display:flex;gap:8px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+    .lc-desc-item:last-child{border-bottom:none}
+    .lc-desc-item .legend-swatch{margin-top:2px}
+    .lc-desc-name{font-size:11px;color:var(--accent);margin-bottom:3px}
+    .lc-desc-text{font-size:10px;line-height:1.6;color:var(--text)}
+    .lc-desc-src{font-size:9px;line-height:1.6;color:var(--muted);margin-top:8px}
+    #legend-lc-panel{display:none;margin-top:8px;padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:6px}
+    #legend-lc-panel.open{display:block}
+    .popup-desc{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;line-height:1.6;color:var(--muted)}
     .maplibregl-popup-content{background:var(--surface)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:6px!important;padding:12px 14px!important;font-family:'DM Mono',monospace!important;font-size:11px!important;max-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.5)!important}
     .popup-title{font-size:12px;color:var(--accent);margin-bottom:8px;font-family:'Fraunces',serif}
     .popup-row{display:flex;justify-content:space-between;gap:12px;margin-bottom:3px}
@@ -180,6 +192,10 @@
         <tbody></tbody>
       </table>
     </div>
+    <div class="chart-card" style="margin-top:20px">
+      <div class="chart-card-title">Land Cover Class Descriptions</div>
+      <div id="lulc-dash-desc"></div>
+    </div>
   </div>
   <div class="dash-section" id="dash-forest">
     <div class="dash-title">Forest Loss by Ward &mdash; 2001&ndash;2024</div>
@@ -294,6 +310,12 @@
     </div>
 
     <div class="about-block">
+      <div class="about-block-title">Land Use / Land Cover Classes</div>
+      <div class="about-text">The land use / land cover layer uses the seven classes of the Esri 10m Annual Land Use Land Cover product. Their definitions are reproduced below. They are also available on the map (Legend &rarr; Class descriptions, or by clicking a polygon) and in the Land Use / Land Cover dashboard.</div>
+      <div id="lulc-about-desc"></div>
+    </div>
+
+    <div class="about-block">
       <div class="about-block-title">Land Cover Accuracy Assessment</div>
       <div class="about-text">Reference points were collected via GPS field survey, then temporally cross-checked using high-resolution historical satellite imagery to align with the classification year being validated. This local, ground-based validation confirms that the Esri Land Cover product performs consistently well in Mwenezi District specifically.</div>
       <div class="accuracy-tables">
@@ -381,6 +403,27 @@ map.on('mousemove', function(e) {
   document.getElementById('coords').textContent = e.lngLat.lat.toFixed(4) + '\u00b0  ' + e.lngLat.lng.toFixed(4) + '\u00b0';
 });
 var LULC_COLORS = { 'Trees': '#2d6a2d', 'Crops': '#c8a96e', 'Built Area': '#c0392b', 'Bare Ground': '#b5985a', 'Rangeland': '#7ab648', 'Flooded Vegetation': '#5b8fa8', 'Water': '#3d7ab5' };
+/* Class definitions: Esri 10m Annual Land Use Land Cover (Sentinel-2 derived) */
+var LULC_DESC = {
+  'Water': 'Areas where water was predominantly present throughout the year; may not cover areas with sporadic or ephemeral water; contains little to no sparse vegetation, no rock outcrop nor built up features like docks. Examples: rivers, ponds, lakes, oceans, flooded salt plains.',
+  'Trees': 'Any significant clustering of tall (~15 feet or higher) dense vegetation, typically with a closed or dense canopy. Examples: wooded vegetation, clusters of dense tall vegetation within savannas, plantations, swamp or mangroves (dense/tall vegetation with ephemeral water or canopy too thick to detect water underneath).',
+  'Crops': 'Human planted/plotted cereals, grasses, and crops not at tree height. Examples: corn, wheat, soy, fallow plots of structured land.',
+  'Built Area': 'Human made structures; major road and rail networks; large homogeneous impervious surfaces including parking structures, office buildings and residential housing. Examples: houses, dense villages / towns / cities, paved roads, asphalt.',
+  'Bare Ground': 'Areas of rock or soil with very sparse to no vegetation for the entire year; large areas of sand and deserts with no to little vegetation. Examples: exposed rock or soil, desert and sand dunes, dry salt flats/pans, dried lake beds, mines.',
+  'Rangeland': 'Open areas covered in homogeneous grasses with little to no taller vegetation; wild cereals and grasses with no obvious human plotting (i.e., not a plotted field). Examples: natural meadows and fields with sparse to no tree cover, open savanna with few to no trees, parks/golf courses/lawns, pastures. Mix of small clusters of plants or single plants dispersed on a landscape that shows exposed soil or rock; scrub-filled clearings within dense forests that are clearly not taller than trees. Examples: moderate to sparse cover of bushes, shrubs and tufts of grass, savannas with very sparse grasses, trees or other plants.',
+  'Flooded Vegetation': 'Areas of any type of vegetation with obvious intermixing of water throughout a majority of the year; seasonally flooded area that is a mix of grass/shrub/trees/bare ground. Examples: flooded mangroves, emergent vegetation, rice paddies and other heavily irrigated and inundated agriculture.'
+};
+var LULC_ORDER = ['Water','Trees','Crops','Built Area','Bare Ground','Rangeland','Flooded Vegetation'];
+var LULC_SRC = 'Source: class definitions from the Esri 10m Annual Land Use Land Cover product (Sentinel-2 derived).';
+function lulcDescHTML(){
+  var html='<ul class="lc-desc">';
+  for(var i=0;i<LULC_ORDER.length;i++){
+    var c=LULC_ORDER[i];
+    html+='<li class="lc-desc-item"><div class="legend-swatch" style="background:'+LULC_COLORS[c]+'"></div><div><div class="lc-desc-name">'+c+'</div><div class="lc-desc-text">'+LULC_DESC[c]+'</div></div></li>';
+  }
+  return html+'</ul><div class="lc-desc-src">'+LULC_SRC+'</div>';
+}
+['lulc-dash-desc','lulc-about-desc'].forEach(function(id){var el=document.getElementById(id); if(el)el.innerHTML=lulcDescHTML();});
 var AGRO_COLORS = { 'Region Va': '#e05c1a', 'Region Vb': '#1a6bb5' };
 var FOREST_LOSS_COLORS = { 'no loss': '#1a3a1a', 'loss detected in 2001': '#ffffb2', 'loss detected in 2002': '#feefa0', 'loss detected in 2003': '#fed98e', 'loss detected in 2004': '#fec76d', 'loss detected in 2005': '#feb24c', 'loss detected in 2006': '#fd9a3a', 'loss detected in 2007': '#fc8127', 'loss detected in 2008': '#f86618', 'loss detected in 2009': '#f0460f', 'loss detected in 2010': '#e52b0a', 'loss detected in 2011': '#d41408', 'loss detected in 2012': '#c00007', 'loss detected in 2013': '#ab0006', 'loss detected in 2014': '#960005', 'loss detected in 2015': '#820004', 'loss detected in 2016': '#6e0003', 'loss detected in 2017': '#5a0003', 'loss detected in 2018': '#470002', 'loss detected in 2019': '#380002', 'loss detected in 2020': '#2a0001', 'loss detected in 2021': '#200001', 'loss detected in 2022': '#160001', 'loss detected in 2023': '#0e0001', 'loss detected in 2024': '#060000' };
 var BOUNDS = { 'waypoints-circle': [30.303976,-21.411430,30.710615,-20.819355] };
@@ -579,8 +622,19 @@ function buildLegend(){
     var group=document.createElement('div'); group.className='legend-group';
     var html='<div class="legend-group-name">'+def.legend.title+'</div>';
     var colors=def.legend.colors;
-    for(var label in colors)html+='<div class="legend-row"><div class="legend-swatch" style="background:'+colors[label]+'"></div><span>'+label+'</span></div>';
+    var isLC=(def.id==='lulc-fill');
+    for(var label in colors)html+='<div class="legend-row"'+(isLC&&LULC_DESC[label]?' title="'+LULC_DESC[label].replace(/"/g,'&quot;')+'"':'')+'><div class="legend-swatch" style="background:'+colors[label]+'"></div><span>'+label+'</span></div>';
+    if(isLC)html+='<button type="button" class="lc-toggle" id="legend-lc-toggle">&#9432; Class descriptions</button><div id="legend-lc-panel">'+lulcDescHTML()+'</div>';
     group.innerHTML=html; box.appendChild(group);
+    if(isLC){
+      (function(){
+        var btn=document.getElementById('legend-lc-toggle'), panel=document.getElementById('legend-lc-panel');
+        btn.addEventListener('click',function(){
+          var open=panel.classList.toggle('open');
+          btn.innerHTML=(open?'&#9432; Hide descriptions':'&#9432; Class descriptions');
+        });
+      })();
+    }
   }
 }
 function setupPopups(){
@@ -593,6 +647,7 @@ function setupPopups(){
         if(!visibility[lid])return;
         var props=e.features[0].properties, rows='';
         for(var k in props)if(k!=='fid'&&k!=='id'&&k!=='FID')rows+='<div class="popup-row"><span class="popup-key">'+k+'</span><span class="popup-val">'+props[k]+'</span></div>';
+        if(lid==='lulc-fill'&&LULC_DESC[props.Classe])rows+='<div class="popup-desc">'+LULC_DESC[props.Classe]+'</div>';
         popup.setLngLat(e.lngLat).setHTML('<div class="popup-title">'+titles[lid]+'</div>'+rows).addTo(map);
       });
       map.on('mouseenter',lid,function(){map.getCanvas().style.cursor='pointer';});
@@ -685,7 +740,7 @@ function updateLULCCharts(){
   for(var i=0;i<classes.length;i++){
     var pct=grand>0?(values[i]/grand*100).toFixed(1):'0.0';
     var row=document.createElement('tr');
-    row.innerHTML='<td><span class="summary-swatch" style="background:'+colors[i]+'"></span>'+classes[i]+'</td><td>'+values[i].toLocaleString()+'</td><td>'+pct+'%</td>';
+    row.innerHTML='<td'+(LULC_DESC[classes[i]]?' title="'+LULC_DESC[classes[i]].replace(/"/g,'&quot;')+'" style="cursor:help"':'')+'><span class="summary-swatch" style="background:'+colors[i]+'"></span>'+classes[i]+'</td><td>'+values[i].toLocaleString()+'</td><td>'+pct+'%</td>';
     tbody.appendChild(row);
   }
 }
